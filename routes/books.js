@@ -2,17 +2,6 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../helpers/database');
 
-/*router.get('/:id',(req,res)=>{
-    const params = [req.params.id];
-    const sqlQuery = 'SELECT * FROM books WHERE id_book=?';
-    pool.query(sqlQuery,params, (err, rows, fields) =>{
-        if(err){
-            res.status(500).send(error.message);
-        }
-        res.status(200).json(rows);
-    })
-});*/
-
 router.get('/:id',(req,res)=>{
     const params = [req.params.id];
     const sqlQuery = 'SELECT * FROM books WHERE id_book=?';

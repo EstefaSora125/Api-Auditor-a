@@ -3,9 +3,10 @@ const router = express.Router();
 const pool = require('../helpers/database');
 
 
-router.get('/:id',(req,res)=>{
-    const params = [req.params.id];
-    const sqlQuery = 'SELECT * FROM authors WHERE id_author=?';
+router.get('/',(req,res)=>{
+    const params = [Object.values(req.body), 'DL'];
+    const sqlQuery = 'SELECT * FROM authors WHERE id_author=? AND state != ?';
+    console.log(params);
     pool.query(sqlQuery,params).then((rows) =>{
         res.status(200).json(rows);
     }).catch((err)=>{
@@ -13,11 +14,11 @@ router.get('/:id',(req,res)=>{
     })
 });
 
-router.get('/',(req,res)=>{
-    const sqlQuery = 'SELECT * FROM authors';
-    pool.query(sqlQuery).then((rows) =>{
+router.get('/list',(req,res)=>{
+    const params = ['DL'];
+    const sqlQuery = 'SELECT * FROM authors WHERE state != ?';
+    pool.query(sqlQuery,params).then((rows) =>{
         res.status(200).json(rows);
-        console.log(rows);
     }).catch((err)=>{
         res.status(500).send(err.message);
     })
@@ -26,7 +27,7 @@ router.get('/',(req,res)=>{
 router.post('/register', (req,res)=> {
     const author_params = Object.values(req.body);
     console.log(author_params);
-    const sqlQuery = 'INSERT INTO authors (name,email,phone_number) VALUES (?,?,?)';
+    const sqlQuery = 'INSERT INTO authors (name,email,phone_number,state) VALUES (?,?,?,?)';
     pool.query(sqlQuery, author_params).then((rows) =>{
         res.status(200).json("Author Agregado exitosamente");
     }).catch((err)=>{
@@ -34,28 +35,27 @@ router.post('/register', (req,res)=> {
     })
 })
 
-router.put('/update', async function(req,res) {
-    try {
-        const author_params = Object.values(req.body);
-        author_params.shift()
-        author_params.push(req.body.id_author);
-        const sqlQuery = 'UPDATE authors SET name =?,email=?,phone_number=? WHERE id_author= ?';
-        const result = await pool.query(sqlQuery, author_params);
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(400).send(error.message)
-    }
+router.put('/update', (req,res)=>{
+    const author_params = Object.values(req.body);
+    author_params.shift();
+    author_params.push(req.body.id_author);
+    const sqlQuery = 'UPDATE authors SET name =?,email=?,phone_number=?,state=? WHERE id_author= ?';
+    pool.query(sqlQuery, author_params).then((rows) =>{
+        res.status(200).json("Author modificado exitosamente");
+    }).catch((err)=>{
+        res.status(500).send(err.message);
+    })
 })
 
-router.patch('/:id', async function(req,res){
-    try {
-        const sqlQuery = 'DELETE FROM books WHERE id_book=?';
-        const rows = await pool.query(sqlQuery, req.params.id);
-        res.status(200).json(rows);
-    } catch (error) {
-        res.status(400).send(error.message)
-    }
-    res.status(200).json({id:req.params.id})
+router.patch('/delete',(req,res)=>{
+    const author_params = ['DL'];
+    author_params.push(Object.values(req.body));
+    const sqlQuery = 'UPDATE authors SET state=? WHERE id_author = ?';
+    pool.query(sqlQuery, req.params.id).then((rows) =>{
+        res.status(200).json("Author Agregado exitosamente");
+    }).catch((err)=>{
+        res.status(500).send(err.message);
+    })
 });
 
 module.exports = router;
