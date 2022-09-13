@@ -51,8 +51,8 @@ router.patch('/delete',(req,res)=>{
     const author_params = ['DL'];
     author_params.push(Object.values(req.body));
     const sqlQuery = 'UPDATE authors SET state=? WHERE id_author = ?';
-    pool.query(sqlQuery, req.params.id).then((rows) =>{
-        res.status(200).json("Author Agregado exitosamente");
+    pool.query(sqlQuery, author_params).then((rows) =>{
+        res.status(200).json("Author eliminado exitosamente");
     }).catch((err)=>{
         res.status(500).send(err.message);
     })
