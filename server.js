@@ -16,6 +16,9 @@ app.listen(port, ()=>{
 const booksRouter = require('./routes/books');
 app.use('/book',booksRouter);
 
+const authorRouter = require('./routes/authors');
+app.use('/author',authorRouter);
+
 
 app.get("/", (req, res)=>{
     //res.send("Hello world")

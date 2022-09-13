@@ -2,18 +2,38 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../helpers/database');
 
-router.get('/:id', async function(req,res){
-    try {
-        const sqlQuery = 'SELECT * FROM books WHERE id_book=?';
-        const rows = await pool.query(sqlQuery, req.params.id);
+/*router.get('/:id',(req,res)=>{
+    const params = [req.params.id];
+    const sqlQuery = 'SELECT * FROM books WHERE id_book=?';
+    pool.query(sqlQuery,params, (err, rows, fields) =>{
+        if(err){
+            res.status(500).send(error.message);
+        }
         res.status(200).json(rows);
-    } catch (error) {
-        res.status(400).send(error.message)
-    }
-    res.status(200).json({id:req.params.id})
+    })
+});*/
+
+router.get('/:id',(req,res)=>{
+    const params = [req.params.id];
+    const sqlQuery = 'SELECT * FROM books WHERE id_book=?';
+    pool.query(sqlQuery,params).then((rows) =>{
+        res.status(200).json(rows);
+    }).catch((err)=>{
+        res.status(500).send(err.message);
+    })
 });
 
-router.get('/list', async function(req,res){
+router.get('/',(req,res)=>{
+    const sqlQuery = 'SELECT * FROM books';
+    console.log("tamos llegando");
+    pool.query(sqlQuery, (err, rows, fields) =>{
+        if(err){
+            res.status(500).send(error.message)
+        }
+        res.status(200).json(rows);
+    })
+});
+router.get('/', async function(req,res){
     try {
         const sqlQuery = 'SELECT * FROM books';
         const rows = await pool.query(sqlQuery);

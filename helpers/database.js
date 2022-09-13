@@ -9,8 +9,12 @@ const pool = mariadb.createPool({
     connectionLimit: 5
 });
 
-pool.getConnection((err, connection) => {
-    if(err){
+
+pool.getConnection()
+    .then(conn => {
+        console.log("habemus BD")
+        connection.release();
+    }).catch(err => {
         if (err.code === 'PROTOCOL_CONNECTION_LOST'){
             console.error('Database connection lost');
         }
@@ -20,10 +24,6 @@ pool.getConnection((err, connection) => {
         if (err.code === 'ECONNREFUSED'){
             console.error('Database connection was refused');
         }
-    }
-    if(connection) connection.release();
-
-    return;
 });
 
 module.exports = pool;
