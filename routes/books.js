@@ -1,61 +1,97 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../helpers/database');
+const {PrismaClient} = require('@prisma/client');
+const prisma =  new PrismaClient();
 
-
-router.get('/',(req,res)=>{
-    const params = [Object.values(req.body), 'DL'];
-    const sqlQuery = 'SELECT * FROM books WHERE id_book=? AND state != ?';
-    pool.query(sqlQuery,params).then((rows) =>{
-        res.status(200).json(rows);
-    }).catch((err)=>{
-        res.status(500).send(err.message);
+router.get('/list', verifyToken,async (req, res) =>{
+    const book =  await prisma.books.findMany({
+        where:{
+            state: 'AC'
+        }
     })
-});
-
-
-router.get('/list',(req,res)=>{
-    const params = ['DL'];
-    const sqlQuery = 'SELECT * FROM books WHERE state != ?';
-    pool.query(sqlQuery,params).then((rows) =>{
-        res.status(200).json(rows);
-    }).catch((err)=>{
-        res.status(500).send(err.message);
-    })
-});
-
-
-router.post('/register', (req,res)=> {
-    const params = Object.values(req.body);
-    const sqlQuery = 'INSERT INTO books (isbn,name,description,year,editorial,state,id_author,edition,page_number,colombian_pesos) VALUES (?,?,?,?,?,?,?,?,?,?)';
-    pool.query(sqlQuery, params).then((rows) =>{
-        res.status(200).json({"status":"OK","description":"Libro agregado exitosamente"});
-    }).catch((err)=>{
-        res.status(500).send(err.message);
-    })
+    res.json(book)
 })
 
-router.put('/update', (req,res)=>{
-    const author_params = Object.values(req.body);
-    author_params.shift();
-    author_params.push(req.body.id_book);
-    const sqlQuery = 'UPDATE books SET description = ?,editorial=?,state=?,colombian_pesos = ? WHERE id_book= ?';
-    pool.query(sqlQuery, author_params).then((rows) =>{
-        res.status(200).json({"status":"OK","description":"Libro modificado exitosamente"});
-    }).catch((err)=>{
-        res.status(500).send(err.message);
+/*Obtener un libro*/
+
+router.get('/', verifyToken, async (req, res) =>{
+    const book =  await prisma.books.findMany({
+        where:{
+            id_book: req.body.id_book
+        }
     })
+    res.json(book)
 })
 
-router.patch('/delete',(req,res)=>{
-    const author_params = ['DL'];
-    author_params.push(Object.values(req.body));
-    const sqlQuery = 'UPDATE books SET state=? WHERE id_book = ?';
-    pool.query(sqlQuery, author_params).then((rows) =>{
-        res.status(200).json({"status":"OK","description":"Libro eliminado exitosamente"});
-    }).catch((err)=>{
-        res.status(500).send(err.message);
-    })
-});
+/* Crear libro */
+
+router.post('/register', verifyToken, async (req, res) =>{
+    try{
+        const {isbn, name, description, year, editorial,
+            state, id_author, edition, page_number,
+            colombian_pesos} = req.body
+            const result =  await prisma.books.create({
+                data: {
+                    isbn, name, description, year, editorial,
+                    state, id_author, edition, page_number,
+                    colombian_pesos
+                }
+            })
+            res.json("Nuevo libro registrado");
+    }catch(err){        
+        console.log(err)
+    }    
+})
+
+
+/* Actualizar dato*/
+
+router.put('/update', verifyToken, async (req, res) =>{
+    try{
+        const {isbn, name, description, year, editorial,
+            state, id_author, edition, page_number,
+            colombian_pesos} = req.body
+            const result =  await prisma.books.update({
+                where: {id_book: req.body.id_book},
+                data: {
+                    isbn, name, description, year, editorial,
+                    state, id_author, edition, page_number,
+                    colombian_pesos
+                }
+            })
+            res.json("Libro actualizado");
+    }catch(err){        
+        console.log(err)
+    }    
+})
+
+/*Eliminar libro*/
+
+router.patch('/delete', verifyToken, async (req, res) =>{
+    try{
+        const result =  await prisma.books.update({
+            where: {id_book: req.body.id_book},
+            data: {
+                state: 'DL'
+            }
+        })
+        res.json("Libro eliminado");
+    }catch(err){        
+        console.log(err)
+    }    
+})
+
+function verifyToken(req, res, next){
+    const bearerHeader =  req.headers['authorization'];
+
+    if(typeof bearerHeader !== 'undefined'){
+         const bearerToken = bearerHeader.split(" ")[1];
+         req.token  = bearerToken;
+         next();
+    }else{
+        res.sendStatus(403);
+    }
+}
 
 module.exports = router;
