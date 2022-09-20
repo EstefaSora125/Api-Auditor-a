@@ -11,7 +11,7 @@ model authors {
   id_author    Int     @id @default(autoincrement())
   name         String  @db.VarChar(50)
   email        String? @default("0") @db.VarChar(50)
-  phone_number BigInt?
+  phone_number Int?
   state        String  @default("AC") @db.Char(2)
   books        books[]
 }
