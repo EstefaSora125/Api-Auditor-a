@@ -8,8 +8,9 @@ const verifyToken = function (req, res, next){
         'err': 401,
         'message':'access denied, token no found'
     });
-    
-    jwt.verify(bearerHeader, process.env.SECRET, (err, user)=>{
+    const token = bearerHeader.split(" ");
+    console.log(token)
+    jwt.verify(token[1], process.env.SECRET, (err, user)=>{
         if(err){
             res.json({
                 'err': 401,
