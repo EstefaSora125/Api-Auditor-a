@@ -19,6 +19,9 @@ app.use('/book',booksRouter);
 const authorRouter = require('./routes/authors');
 app.use('/author',authorRouter);
 
+const userRouter = require('./routes/users');
+app.use('/user',userRouter);
+
 
 app.get("/", (req, res)=>{
     //res.send("Hello world")

@@ -3,8 +3,11 @@ const router = express.Router();
 const pool = require('../helpers/database');
 const {PrismaClient} = require('@prisma/client');
 const prisma =  new PrismaClient();
+const auth = require('../helpers/auth');
+//import {verifyToken} from '../helpers/auth';
 
-router.get('/list', verifyToken,async (req, res) =>{
+
+router.get('/list',auth.verifyToken,async (req, res) =>{
     const book =  await prisma.books.findMany({
         where:{
             state: 'AC'
@@ -15,7 +18,7 @@ router.get('/list', verifyToken,async (req, res) =>{
 
 /*Obtener un libro*/
 
-router.get('/', verifyToken, async (req, res) =>{
+router.get('/', auth.verifyToken, async (req, res) =>{
     const book =  await prisma.books.findMany({
         where:{
             id_book: req.body.id_book
@@ -26,7 +29,7 @@ router.get('/', verifyToken, async (req, res) =>{
 
 /* Crear libro */
 
-router.post('/register', verifyToken, async (req, res) =>{
+router.post('/register', auth.verifyToken, async (req, res) =>{
     try{
         const {isbn, name, description, year, editorial,
             state, id_author, edition, page_number,
@@ -47,7 +50,7 @@ router.post('/register', verifyToken, async (req, res) =>{
 
 /* Actualizar dato*/
 
-router.put('/update', verifyToken, async (req, res) =>{
+router.put('/update', auth.verifyToken, async (req, res) =>{
     try{
         const {isbn, name, description, year, editorial,
             state, id_author, edition, page_number,
@@ -68,7 +71,7 @@ router.put('/update', verifyToken, async (req, res) =>{
 
 /*Eliminar libro*/
 
-router.patch('/delete', verifyToken, async (req, res) =>{
+router.patch('/delete', auth.verifyToken, async (req, res) =>{
     try{
         const result =  await prisma.books.update({
             where: {id_book: req.body.id_book},
@@ -82,16 +85,5 @@ router.patch('/delete', verifyToken, async (req, res) =>{
     }    
 })
 
-function verifyToken(req, res, next){
-    const bearerHeader =  req.headers['authorization'];
-
-    if(typeof bearerHeader !== 'undefined'){
-         const bearerToken = bearerHeader.split(" ")[1];
-         req.token  = bearerToken;
-         next();
-    }else{
-        res.sendStatus(403);
-    }
-}
 
 module.exports = router;

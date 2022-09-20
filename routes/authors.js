@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require('../helpers/database');
 const {PrismaClient} = require('@prisma/client');
 const prisma =  new PrismaClient();
+const {verifyToken} = require('../helpers/auth');
 
 router.get('/list', verifyToken, async (req, res) =>{
     const author =  await prisma.authors.findMany({
@@ -21,6 +22,7 @@ router.get('/', verifyToken, async (req, res) =>{
             id_author: req.body.id_author
         }
     })
+    console.log(author);
     res.json(author)
 })
 
@@ -73,16 +75,5 @@ router.patch('/delete', verifyToken, async (req, res) =>{
     }    
 })
 
-function verifyToken(req, res, next){
-    const bearerHeader =  req.headers['authorization'];
-
-    if(typeof bearerHeader !== 'undefined'){
-         const bearerToken = bearerHeader.split(" ")[1];
-         req.token  = bearerToken;
-         next();
-    }else{
-        res.sendStatus(403);
-    }
-}
 
 module.exports = router;
