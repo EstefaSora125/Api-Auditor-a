@@ -3,7 +3,7 @@ CREATE TABLE `authors` (
     `id_author` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(50) NOT NULL,
     `email` VARCHAR(50) NULL DEFAULT '0',
-    `phone_number` BIGINT NULL,
+    `phone_number` INTEGER NULL,
     `state` CHAR(2) NOT NULL DEFAULT 'AC',
 
     PRIMARY KEY (`id_author`)
