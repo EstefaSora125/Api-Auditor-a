@@ -5,6 +5,7 @@ const {PrismaClient} = require('@prisma/client');
 const prisma =  new PrismaClient();
 const jwt = require('jsonwebtoken');
 const {verifyToken} = require('../helpers/auth');
+const logger = require('../helpers/logger')
 
 router.get('/list', verifyToken, async (req, res) =>{
     const users =  await prisma.users.findMany()
@@ -19,6 +20,7 @@ router.get('/', verifyToken, async (req, res) =>{
             username: req.body.username
         }
     })
+    logger.info(`solicitud usuario ${req.body.username}`)
     res.json(users)
 })
 
@@ -32,8 +34,10 @@ router.post('/register', async (req, res) =>{
                     username, password
                 }
             })
+            logger.info(`Registro exitoso nuevo usuario ${username}`)
             res.json("Nuevo usuario registrado");
-    }catch(err){        
+    }catch(err){   
+        logger.info(`Registro fallido nuevo usuario ${username} error: ${err}`)     
         console.log(err)
     }    
 })
@@ -48,8 +52,10 @@ router.put('/update',verifyToken, async (req, res) =>{
                     username: req.body.username
                 },
             })
+            logger.info(`Actualizacion exitosa de contraseña de usuario  ${req.body.username}`)
             res.json("Contraseña de usuario actualizado");
-    }catch(err){        
+    }catch(err){     
+        logger.info(`Actualizacion fallida de contraseña de usuario  ${req.body.username} error: ${err}`)   
         console.log(err)
     }    
 })
@@ -73,6 +79,7 @@ router.patch('/delete', verifyToken, async (req, res) =>{
 //consultar un usuario*/
 router.post('/auth', async (req, res) =>{
     try{
+        console.log("validando usuario");
         const {username, password} = req.body
             const result =  await prisma.users.findMany({
                 where: {
@@ -82,11 +89,13 @@ router.post('/auth', async (req, res) =>{
             })
             console.log(result)
             if (result== []) {
+                logger.info(`Inicio sesion fallido por falta de datos  de usuario  ${req.body.username}`)
                 res.json({
                     "err": 400,
                     "message": "datos incorrectos o usuario inexistente"
                 })
             } else {
+                logger.info(`Inicio sesion exitoso  de usuario  ${req.body.username}`)
                 const accessToken = generateAccessToken(result[0]);
                 res.header('authorization', accessToken).json({
                     message:'Usuario autenticado',
@@ -95,6 +104,7 @@ router.post('/auth', async (req, res) =>{
             }
     }catch(err){        
         console.log(err)
+        logger.info(`Inicio sesion fallido de usuario  ${req.body.username} error: ${err}`)
         res.json({
             "err": 400,
             "message": "datos incorrectos o usuario inexistente"
